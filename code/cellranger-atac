@@ -1,0 +1,10 @@
+#PBS -S /bin/bash
+#PBS -N S1
+#PBS -l nodes=1:XD128:ppn=12
+#PBS -l walltime=120:00:00
+#PBS -q XD128
+#PBS -o /pfs2/10x-hg19/featurecount.out
+#PBS -e /pfs2/10x-hg19/featurecount.err
+
+cd /pfs2/10x-hg19/S1
+cellranger-atac count --id=S1 --reference=/pfs1/refdata-cellranger-atac-hg19-1.2.0 --fastqs=./;
