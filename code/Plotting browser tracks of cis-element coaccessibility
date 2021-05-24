@@ -1,0 +1,56 @@
+projncov <- addCoAccessibility(ArchRProj = projncov, 
+                               reducedDims = 'Harmony')
+cA <- getCoAccessibility(ArchRProj = projncov,
+                         corCutOff = 0.5,
+                         resolution = 1,
+                         returnLoops = F)
+cA
+
+metadata(cA)[[1]]
+cA <- getCoAccessibility(ArchRProj = projncov,
+                         corCutOff = 0.5,
+                         resolution = 1,
+                         returnLoops = T)
+cA[[1]]
+
+cA <- getCoAccessibility(ArchRProj = projncov,
+                         corCutOff = 0.5,
+                         resolution = 1000, #when decrease the resolution of our loops to resolution = 1000, this can help with over-plotting of co-accessibility interactions
+                         returnLoops = T)
+
+cA[[1]]
+
+cA <- getCoAccessibility(ArchRProj = projncov,
+                         corCutOff = 0.5,
+                         resolution = 10000,  returnLoops = T) #when decrease the resolution of our loops to resolution = 10000, we identify even fewer co-accessibility interactions
+
+cA[[1]]
+
+##Plotting browser tracks of Co-accessibility
+# once we have added co-accessibility information to our ArchRProject, we can use this as a loop track when plotting browser tracks.
+
+markerGenes <- c('CD19','MS4A1','IL4R','CD27','CD38','XBP1','TCL1A','BCL11A','BAFF','LEF1','TBX21','REL','ERG','EBF1','CSMD1','CTNNA2','OPCML','GAS7','CXCR4','CD37','MEF2C','CCR6','BHLHE41','TNFSF9','POU2AF1',
+                 'TNFRSF13C','PLCG2','PAX5','KCNN4','EBF1','TGFBR3','ID2','GATA3','RORA','IL7R','PRKCA')
+markerGenes <- c('TNFSF13B')
+p <- plotBrowserTrack(ArchRProj = projncov,
+                      groupBy = "Clusters",
+                      geneSymbol = markerGenes,
+                      upstream = 50000,
+                      downstream = 50000,
+                      loops = getCoAccessibility(projncov))
+
+p <- plotBrowserTrack(ArchRProj = projncov,
+                      groupBy = "sampletype2",
+                      geneSymbol = markerGenes,
+                      upstream = 50000,
+                      downstream = 50000,
+                      loops = getCoAccessibility(projncov))
+
+#ArchRBrowser(projncov)
+grid::grid.newpage()
+plotPDF(plotList = p,
+        name = 'Plot-B-sampletype2-Tracks-Marker-Genes-with-CoAccessibility-BAFF.pdf',
+        ArchRProj = projncov,
+        addDOC = F, width = 5, height = 5)
+
+                returnLoops = T)
