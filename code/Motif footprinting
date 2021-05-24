@@ -1,0 +1,20 @@
+motifPositions <- getPositions(projncov) # this creates a GRangesList object where each TF motif is represented by a separate GRanges object.
+motifPositions
+motifs <- c('ERG','BCL11A','LYL1','IRF8','LMO2','MEF2C','POU2F2','PAX5','TCF4','ID3','EBF1',
+            'BATF','REL','NR1H2','SPIB','TP73','EBF1','EOMES','TBX21','GATA3','TCF7','LEF1')
+motifs <-c('KLF4','ERG','TCF12','IRF2','IRF5','IRF8','IRF1','MEF2C','BCL11A','PAX5','ID3','SPIB','TCF4','BATF',
+           'NR1H2','REL','IRF4','EBF1','TP73','POU2F2','MEF2A','EOMES','TBX21','RUNX1','GATA3','TCF7','LEF1','RUNX2')
+markerMotifs <- unlist(lapply(motifs, function(x) grep(x, names(motifPositions), value = T)))
+markerMotifs <- markerMotifs[markerMotifs %ni% 'SREBF1_22']
+markerMotifs
+seFoot <- getFootprints(ArchRProj = projncov,
+                        positions = motifPositions[markerMotifs],
+                        groupBy = 'sampletype2')  #then we can plot them.
+
+##Dividing by the Tn5 Bias: a second strategy for normalization divides the footprinting signal by the Tn5 bias signal
+plotFootprints(seFoot = seFoot,
+               ArchRProj = projncov,
+               normMethod = 'Divide',
+               plotName = 'B-Footprints-Divide-Bias-PorHcelltype',
+               addDOC = F,
+               smoothWindow = 5)
