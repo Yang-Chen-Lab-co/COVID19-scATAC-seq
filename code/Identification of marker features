@@ -1,0 +1,49 @@
+markersGS <- getMarkerFeatures(ArchRProj = projncov,
+                               useMatrix = "GeneScoreMatrix", 
+                               groupBy = "Clusters",
+                               bias = c("TSSEnrichment", "log10(nFrags)"),
+                               testMethod = "wilcoxon", 
+)
+
+markerList <- getMarkers(markersGS,
+                         cutOff = "FDR <= 0.05 & Log2FC >= 1.25",
+                         returnGR = FALSE)
+markerGenes <- c(
+  'PAX5','MS4A1','EBF1','MME','SLC4A10',#B cell trajectory
+  'CD14','CEBPB','MPO', #Monocytes
+  'CD3E','CD8A','TBX21','IL7R',
+  'CD4','FOXP3','IL6','CD3G','PPBP','CD68','LYZ',
+  'TOP2A',
+  'FCGR3A','CD1C','CLEC9A','CLEC4C',
+  'CLEC9A','NCAM1','KLRF1','KLRD1', 
+  'KLRC1','KLRB1','TYMS','GNLY','FABP4',
+  'MKI67','XBP1','MZB1','PRF1','TCL1A','CD27','CD38','FCGR3B',
+  'CCR7','LEF1','TCF7','AQP3',
+  'CCR6','CXCR6','CCL5', 
+  'PRDM1','GZMK','IFNG')
+
+heatmapGS <- markerHeatmap(seMarker = markersGS,
+                           cutOff = "FDR <= 0.05 & Log2FC >= 1.25",
+                           labelMarkers = markerGenes,
+                           transpose = TRUE)
+ComplexHeatmap::draw(heatmapGS, heatmap_legend_side = 'bot', annotation_legend_side = 'bot')
+plotPDF(heatmapGS, name = 'GeneScores-marker-heatmap2',width = 8, height = 6, ArchRProj = projncov, addDOC = F)
+
+projncov <- addImputeWeights(projncov)  #impute weights to our ArchRProject
+p <-plotEmbedding(ArchRProj = projncov,
+                  colorBy = 'GeneScoreMatrix',
+                  name = markerGenes,
+                  embedding = 'UMAPHarmony',
+                  imputeWeights = getImputeWeights(projncov))
+p$CD14
+p2 <- lapply(p, function(x){x + 
+    guides(color = FALSE, fill = FALSE) +
+    theme_ArchR(baseSize = 6.5) +
+    theme(plot.margin = unit(c(0,0,0,0), 'cm')) +
+    theme(axis.text.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank())
+})
+do.call(cowplot::plot_grid, c(list(ncol =3), p2))    #to plot all genes using cowplot into a single plot.
+plotPDF(plotList = p, name = 'plot-UMAP-Marker-genes2-W-Imputation.pdf', ArchRProj = projncov, addDOC = FALSE, width = 5, height =5)
