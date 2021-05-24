@@ -1,0 +1,20 @@
+projncov <- addClusters(input = projncov,
+                        reducedDims = "Harmony2",
+                        method = "Seurat",
+                        name = "Clusters2",
+                        resolution = 0.8, force = TRUE)
+                        
+projncov <- addUMAP(ArchRProj = projncov,
+                    reducedDims = "Harmony2",
+                    name = "UMAPHarmony",
+                    nNeighbors = 20, minDist = 0.5, force = TRUE,
+                    metric = "cosine")
+p1 <- plotEmbedding(ArchRProj = projncov, colorBy = "cellColData", 
+                    name = "Sample", #coloring by 'Sample', we can also  color by 'Cluster'
+                    embedding = "UMAPHarmony")
+p2 <- plotEmbedding(ArchRProj = projncov, colorBy = "cellColData", 
+                    name = "Clusters", #we can also  color by 'Cluster'
+                    embedding = "UMAPHarmony")
+p3 <- plotEmbedding(ArchRProj = projncov, colorBy = "cellColData", 
+                    name = "batch", #we can also  color by 'Cluster'
+                    embedding = "UMAPHarmony")
