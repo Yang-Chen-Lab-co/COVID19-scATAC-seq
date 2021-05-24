@@ -1,0 +1,43 @@
+rm(list = ls()) 
+Sys.setenv(R_MAX_NUM_DLLS=999)
+library('ArchR')
+library('pheatmap')
+library('Rsamtools')
+library('scran')
+setwd("/Volumes/PSSD/COV-new/")
+addArchRGenome("hg19")
+addArchRThreads(threads = 16)
+input.file.list = c('./H29-fragments.tsv.gz',
+                    './H30-fragments.tsv.gz',
+                    './H789-fragments.tsv.gz',
+                    './HD12-fragments.tsv.gz',
+                    './M1-fragments.tsv.gz',
+                    './M2-fragments.tsv.gz',
+                    './M4-fragments.tsv.gz',
+                    './M5-fragments.tsv.gz',
+                    './M6-fragments.tsv.gz',
+                    './S1-fragments.tsv.gz',
+                    './S2-fragments.tsv.gz',
+                    './S3-fragments.tsv.gz')
+sample.name.ls = c('H29','H30','H789','HD12','M1','M2','M4','M5','M6','S1','S2','S3')
+ArrowFiles <- createArrowFiles(
+  inputFiles = input.file.list,
+  sampleNames = sample.name.ls,
+  filterTSS = 8, 
+  filterFrags = 1000, 
+  addTileMat = TRUE,
+  addGeneScoreMat = TRUE)
+
+#####Creating Arrow files
+ArrowFiles <- c( "M1.arrow","M2.arrow","M4.arrow","M5.arrow","M6.arrow","S1.arrow","S2.arrow","S3.arrow",
+                 'H789.arrow','H29.arrow','H30.arrow','HD12.arrow')
+
+projncov <- ArchRProject(ArrowFiles = ArrowFiles,
+                         outputDirectory = "./",
+                         copyArrows = F) 
+
+p1 <- plotFragmentSizes(ArchRProj = projncov)
+p2 <- plotTSSEnrichment(ArchRProj = projncov)
+plotPDF(p1,p2, name = "QC-Sample-FragSizes-TSSProfile.pdf", ArchRProj = projncov, addDOC = FALSE, width = 5, height = 5)
+
+saveArchRProject(ArchRProj = projncov, outputDirectory = "../10x-COV-all", load = FALSE)
