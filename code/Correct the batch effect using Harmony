@@ -1,0 +1,25 @@
+projncov <- addIterativeLSI(ArchRProj = projncov,
+                            useMatrix = "TileMatrix",
+                            name = "IterativeLSI",
+                            iterations = 4,
+                            clusterParams = list(resolution = c(0.2),
+                                                 sampleCells =70000,
+                                                 n.start = 10),
+                            varFeatures = 15000,
+                            dimsToUse = 1:30,
+                            force = TRUE
+)
+projncov <- addHarmony(ArchRProj = projncov,
+                       reducedDims = "IterativeLSI",max.iter.cluster = 20,
+                       name = "Harmony",max.iter.harmony = 10,epsilon.cluster = -Inf,epsilon.harmony= -Inf,
+                       groupBy = "Sample",force = T)
+projncov <- addHarmony(ArchRProj = projncov,
+                       reducedDims = "Harmony",nclust=50,do_pca = FALSE,
+                       max.iter.cluster = 200,theta=0.1,lambda=0.5,plot_convergence = T,
+                       name = "Harmony2",max.iter.harmony = 10,epsilon.cluster = -Inf,epsilon.harmony= -Inf,
+                       groupBy = "Sample",force = T)
+projncov <- addClusters(input = projncov,
+                        reducedDims = "Harmony2",
+                        method = "Seurat",
+                        name = "Clusters",
+                        resolution = 0.4, force = TRUE)
