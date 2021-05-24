@@ -1,0 +1,52 @@
+trajectory <- c("immature", "naive",'memory','plasma')
+projncov <- addTrajectory(
+  ArchRProj = projncov, 
+  name = "COVHD", 
+  groupBy = "celltype2",
+  trajectory = trajectory, 
+  embedding = "UMAP", 
+  force = TRUE
+)
+p1 <- plotTrajectory(projncov, trajectory = "COVHD", groupBy = "celltype2",colorBy = "cellColData", name = "COVHD",alpha=0.5)
+p1[[1]]
+plotPDF(p1, name = "Plot-COVHD-B1-Traj-UMAP.pdf", ArchRProj = projncov, addDOC = FALSE, width = 5, height = 5)
+motifs <-c('REL','RELA','RELB','BCL11A','IRF4','EBF1','POU2F2','BATF','TBX21','LEF1','NFKB1','SPIB','TCF4','NFKB2',
+           'JUN','JUND','FOSB','RUNX1','TP73','POU2F2','MEF2C','EOMES','RUNX2')
+markerMotifs <- getFeatures(projncov, select = paste(motifs, collapse = '|'), useMatrix = 'Motif-celltypeMatrix')
+markerMotifs <- grep('z:', markerMotifs, value = T)
+markerMotifs <- markerMotifs[markerMotifs %ni% 'z:SREBF1_22']
+markerMotifs
+
+p1 <- plotTrajectory(projncov, trajectory = "COVHD", colorBy = "GeneScoreMatrix", name ='IRF4', continuousSet = "horizonExtra")
+plotPDF(p1, name = "Plot-COVHD-Traj0-IRF4-UMAP-genescore-deviationscore.pdf", ArchRProj = projncov, addDOC = FALSE, width = 5, height = 5)
+
+trajMM  <- getTrajectory(ArchRProj = projncov, name = "COVHD", useMatrix = "MotifMatrix", log2Norm = FALSE)
+p1 <- plotTrajectoryHeatmap(trajMM, pal = paletteContinuous(set = "solarExtra"),labelTop = 100)
+
+trajGSM <- getTrajectory(ArchRProj = projncov, name = "COVHD", useMatrix = "GeneScoreMatrix", log2Norm = TRUE)
+
+p2 <- trajectoryHeatmap(trajGSM,  pal = paletteContinuous(set = "horizonExtra"),labelTop = 100)
+
+trajPM  <- getTrajectory(ArchRProj = projncov, name = "COVHD", useMatrix = "PeakMatrix", log2Norm = TRUE)
+p4 <- plotTrajectoryHeatmap(trajPM, pal = paletteContinuous(set = "solarExtra"),labelTop = 100)
+
+plotPDF(p1, p2, p4, name = "Plot-COVHD-Traj-Heatmaps-2.pdf", ArchRProj = projncov, addDOC = FALSE, width = 6, height = 10)
+#find motifs whose accessibility across pseudo-time is correlated with the gene score of the TF gene.
+corGSM_MM <- correlateTrajectories(trajGSM, trajMM)
+corGSM_MM[[1]]
+
+trajGSM2 <- trajGSM[corGSM_MM[[1]]$name1, ] #subset our corresponding trajectory SummarizedExperiment objects to only contain the elements that passed significance above.
+trajMM2 <- trajMM[corGSM_MM[[1]]$name2, ]
+
+#To best order these features, we can create a new trajectory where the values of these two trajectories are multiplied. 
+trajCombined <- trajGSM2
+assay(trajCombined) <- t(apply(assay(trajGSM2), 1, scale)) + t(apply(assay(trajMM2), 1, scale))
+combinedMat <- plotTrajectoryHeatmap(trajCombined, returnMat = TRUE, varCutOff = 0)
+rowOrder <- match(rownames(combinedMat), rownames(trajGSM2))
+
+#gene score trajectory
+ht1 <- plotTrajectoryHeatmap(trajGSM2,  pal = paletteContinuous(set = "horizonExtra"),  varCutOff = 0, rowOrder = rowOrder)
+#the motif trajectory
+ht2 <- plotTrajectoryHeatmap(trajMM2, pal = paletteContinuous(set = "solarExtra"), varCutOff = 0, rowOrder = rowOrder)
+ht1 + ht2
+plotPDF(ht1,ht2, name = "Plot-COVHD-Traj-integration-GSM-MM-2.pdf", ArchRProj = projncov, addDOC = FALSE, width = 6, height = 8)
